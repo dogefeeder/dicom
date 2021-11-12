@@ -5,7 +5,7 @@ from pydicom.filewriter import write_file_meta_info
 
 from pynetdicom import AE, debug_logger, evt, AllStoragePresentationContexts, ALL_TRANSFER_SYNTAXES
 from pynetdicom.sop_class import CTImageStorage
-fp = './dcms/case1'
+fp = '../dcms/cases'
 # import SimpleITK as sitk
 
 debug_logger()
@@ -72,5 +72,5 @@ def handle_store(event, storage_dir):
         f.write(event.request.DataSet.getvalue())
     return 0x0000
 
-handlers = [(evt.EVT_C_STORE, handle_store, ['received'])]
+handlers = [(evt.EVT_C_STORE, handle_store, ['../received'])]
 ae.start_server(('', 11112), block=True, evt_handlers=handlers)
