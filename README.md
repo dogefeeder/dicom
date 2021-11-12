@@ -1,4 +1,4 @@
-## dicom
+## Dicom
 The dicom project includes 3 python files:
 1. my_scu.py
 The script acts as sender (requestor) of dicom files and receiver (acceptor) of backward dicom files from my_scp.py
