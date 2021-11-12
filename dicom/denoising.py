@@ -257,35 +257,45 @@ if __name__ == '__main__':
                 fps = sorted(fps,key=sort_key)
                 dss = []
                 orig = []
+                insIDs = []
                 for f in fps:
                     dss.append(dcmread(f))
                     orig.append(dss[-1].pixel_array)
-                orig = np.array(orig)
-                
-                output,mask = deskull(orig)
-                #print('1.',orig_deskulled.shape,mask.shape)
-                output = denoising(output)
-                #print('2.',output.shape, mask.dtype)
-                #orig = np.array(orig,dtype=np.float16)
-                print(orig.shape,orig.dtype)
-                print(mask.shape,mask.dtype)
-                print(output.shape,output.dtype)
-                output[mask] = orig[mask]
-                #output = combine(orig,mask,orig_denoised)
-                #print('3.',output.shape)
-                
+                    insIDs.append(dss[-1].SeriesInstanceUID)
+                insIDs_unique = np.unique(insIDs)
+                for insID in insIDs_unique:
+                    print(f'========== Case {insID} ============')
+                    ids = [i for i in range(len(insIDs)) if insIDs[i]==insID]
+                    fps_i,dss_i,orig_i = [],[],[]
+                    for i in ids:
+                        fps_i.append(fps[i])
+                        dss_i.append(dss[i])
+                        orig_i.append(orig[i])
 
-                for i in range(len(dss)):
-                    dss[i].PixelData = output[i].tobytes()
+                    orig_i = np.array(orig_i)
                 
-                for ds in dss:
-                    status = assoc.send_c_store(ds)
-                    # Check the status of the storage request
-                    if status:
-                        # If the storage request succeeded this will be 0x0000
-                        print('C-STORE request status: 0x{0:04x}'.format(status.Status))
-                    else:
-                        print('Connection timed out, was aborted or received invalid response')
+                    output,mask = deskull(orig_i)
+                    #print('1.',orig_deskulled.shape,mask.shape)
+                    output = denoising(output)
+                    #print('2.',output.shape, mask.dtype)
+                    #orig = np.array(orig,dtype=np.float16)
+                    print(orig_i.shape,orig_i.dtype)
+                    print(mask.shape,mask.dtype)
+                    print(output.shape,output.dtype)
+                    output[mask] = orig_i[mask]
+                    #output = combine(orig,mask,orig_denoised)
+                    #print('3.',output.shape)
+                    for i in range(len(dss_i)):
+                        dss_i[i].PixelData = output[i].tobytes()
+                    for ds in dss_i:
+                        status = assoc.send_c_store(ds)
+                        # Check the status of the storage request
+                        #if status:
+                            # If the storage request succeeded this will be 0x0000
+                            #print('C-STORE request status: 0x{0:04x}'.format(status.Status))
+                        #else:
+                        if not status:
+                            print('Connection timed out, was aborted or received invalid response')
             assoc.release()
             dss = []
             orig = []
